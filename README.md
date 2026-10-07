@@ -8,6 +8,7 @@ GeoJSON reutilizables de México, basados en el Marco Geoestadístico de INEGI.
 | --- | --- |
 | [`nacional/mexico-contorno.geojson`](nacional/mexico-contorno.geojson) | Silueta nacional sin divisiones internas. |
 | [`nacional/mexico-entidades.geojson`](nacional/mexico-entidades.geojson) | Las 32 entidades federativas, con claves y nombres. |
+| [`entidades/`](entidades/) | Un archivo GeoJSON con el contorno de cada entidad federativa. |
 
 Los archivos son GeoJSON `FeatureCollection` y sus coordenadas siguen la convención
 WGS 84 del formato GeoJSON. El contorno nacional contiene una sola entidad; el mapa
@@ -31,4 +32,5 @@ Con Python 3 y las dependencias de `requirements.txt`, se ejecuta así:
 python scripts/build_national_maps.py --source ruta/al/geojson-oficial.geojson
 ```
 
-El comando vuelve a generar los dos archivos en `nacional/`.
+El comando vuelve a generar los recursos en `nacional/` y los 32 contornos en
+`entidades/`.

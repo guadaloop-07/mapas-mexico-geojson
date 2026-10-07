@@ -19,6 +19,8 @@
    `nombre_catalogo`; este último normaliza nombres para uso editorial.
 4. El contorno nacional se forma con la unión de las geometrías simplificadas, sin
    límites internos.
+5. Cada entidad simplificada se distribuye también como un GeoJSON individual para
+   facilitar su reutilización como contorno estatal.
 
 Los productos derivados no incluyen colores, etiquetas, valores ni decisiones
 editoriales.

@@ -1,10 +1,12 @@
-"""Construye los GeoJSON nacionales a partir de la capa AGEE oficial de INEGI."""
+"""Construye los GeoJSON nacionales y estatales desde la capa AGEE de INEGI."""
 
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
+import re
+import unicodedata
 from pathlib import Path
 from typing import Any
 
@@ -121,6 +123,26 @@ def build_outline(entities: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def entity_filename(feature: dict[str, Any]) -> str:
+    """Devuelve un nombre de archivo estable y legible para una entidad."""
+    properties = feature["properties"]
+    normalized = unicodedata.normalize("NFKD", properties["nombre_catalogo"])
+    ascii_name = normalized.encode("ascii", "ignore").decode().lower()
+    slug = re.sub(r"[^a-z0-9]+", "-", ascii_name).strip("-")
+    return f"{properties['cve_ent']}-{slug}.geojson"
+
+
+def build_entity_outlines(entities: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Separa las entidades en GeoJSON individuales sin límites internos."""
+    outlines = {}
+    for feature in sorted(entities["features"], key=lambda item: item["properties"]["cve_ent"]):
+        outlines[entity_filename(feature)] = {
+            "type": "FeatureCollection",
+            "features": [feature],
+        }
+    return outlines
+
+
 def write_geojson(path: Path, collection: dict[str, Any]) -> None:
     """Escribe GeoJSON compacto y UTF-8 para una distribución reproducible."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -136,7 +158,13 @@ def main() -> None:
         "--output-dir",
         type=Path,
         default=Path("nacional"),
-        help="Directorio de los GeoJSON generados (predeterminado: nacional).",
+        help="Directorio de los GeoJSON nacionales (predeterminado: nacional).",
+    )
+    parser.add_argument(
+        "--entity-output-dir",
+        type=Path,
+        default=Path("entidades"),
+        help="Directorio de los GeoJSON por entidad (predeterminado: entidades).",
     )
     parser.add_argument(
         "--tolerance",
@@ -154,8 +182,11 @@ def main() -> None:
     collection = load_source(args.source)
     entities = build_entities(collection, args.tolerance)
     outline = build_outline(entities)
+    entity_outlines = build_entity_outlines(entities)
     write_geojson(args.output_dir / "mexico-entidades.geojson", entities)
     write_geojson(args.output_dir / "mexico-contorno.geojson", outline)
+    for filename, entity_outline in entity_outlines.items():
+        write_geojson(args.entity_output_dir / filename, entity_outline)
 
 
 if __name__ == "__main__":
