@@ -1,36 +1,67 @@
 # Mapas de México en GeoJSON
 
-GeoJSON reutilizables de México, basados en el Marco Geoestadístico de INEGI.
+GeoJSON reutilizables de México, basados en el Marco Geoestadístico 2025 de INEGI.
 
-## Recursos disponibles
+El repositorio reúne geometrías nacionales y estatales simplificadas para
+visualización, análisis y generación de imágenes asistida por IA.
 
-| Archivo | Contenido |
+## Recursos
+
+| Recurso | Contenido |
 | --- | --- |
-| [`nacional/mexico-contorno.geojson`](nacional/mexico-contorno.geojson) | Silueta nacional sin divisiones internas. |
-| [`nacional/mexico-entidades.geojson`](nacional/mexico-entidades.geojson) | Las 32 entidades federativas, con claves y nombres. |
-| [`entidades/`](entidades/) | Un archivo GeoJSON con el contorno de cada entidad federativa. |
+| [`nacional/mexico-contorno.geojson`](nacional/mexico-contorno.geojson) | Silueta de México sin divisiones ni trazos internos. Conserva costa e islas. |
+| [`nacional/mexico-entidades.geojson`](nacional/mexico-entidades.geojson) | Mapa de México con las 32 entidades federativas. |
+| [`entidades/`](entidades/) | 32 archivos: un contorno por entidad federativa. |
 
-Los archivos son GeoJSON `FeatureCollection` y sus coordenadas siguen la convención
-WGS 84 del formato GeoJSON. El contorno nacional contiene una sola entidad; el mapa
-de entidades conserva `cve_ent`, `cvegeo`, `nombre_inegi` y `nombre_catalogo`.
+Todos los archivos son GeoJSON `FeatureCollection` y usan coordenadas geográficas
+WGS 84.
 
-## Alcance
+## Atributos
 
-Las geometrías son una versión simplificada del Marco Geoestadístico 2025 de INEGI
-para facilitar su reutilización. Son límites geoestadísticos: no constituyen una
-resolución jurídica de límites territoriales.
+El mapa nacional con entidades y cada archivo individual incluyen:
 
-Consulta [la fuente y el método de procesamiento](FUENTE-Y-ATRIBUCION.md) y los
-[términos aplicables a los datos](LICENSE-DATA.md) antes de redistribuirlos.
+| Campo | Descripción |
+| --- | --- |
+| `cve_ent` | Clave geoestadística estatal de dos dígitos. |
+| `cvegeo` | Clave geográfica original de INEGI. |
+| `nombre_inegi` | Nombre oficial de la entidad en INEGI. |
+| `nombre_catalogo` | Nombre normalizado para uso editorial. |
+
+## Uso
+
+Puedes descargar y reutilizar los archivos en herramientas cartográficas,
+visualizaciones, proyectos web o como archivos de referencia en chats que generen
+imágenes.
+
+Los archivos están simplificados para facilitar su uso visual. Si necesitas
+precisión jurídica, técnica o de escala local, consulta directamente la fuente
+oficial.
+
+## Fuente y atribución
+
+Los archivos derivan de las Áreas Geoestadísticas Estatales del Marco
+Geoestadístico 2025 de INEGI.
+
+Crédito sugerido:
+
+> Fuente: INEGI, Marco Geoestadístico 2025. Versión simplificada por Mapas de
+> México en GeoJSON.
+
+Consulta el detalle de la fuente, transformación y alcance en
+[FUENTE-Y-ATRIBUCION.md](FUENTE-Y-ATRIBUCION.md). Los datos están sujetos a los
+[Términos de Libre Uso de la Información del INEGI](https://www.inegi.org.mx/inegi/terminos.html).
 
 ## Reproducibilidad
 
-El generador está en [`scripts/build_national_maps.py`](scripts/build_national_maps.py).
-Con Python 3 y las dependencias de `requirements.txt`, se ejecuta así:
+El script [`scripts/build_national_maps.py`](scripts/build_national_maps.py) genera
+los recursos a partir de la capa oficial de INEGI.
 
 ```bash
 python scripts/build_national_maps.py --source ruta/al/geojson-oficial.geojson
 ```
 
-El comando vuelve a generar los recursos en `nacional/` y los 32 contornos en
-`entidades/`.
+## Licencia
+
+El código y la documentación originales se distribuyen bajo licencia MIT. Los
+GeoJSON derivados se rigen por los términos aplicables de INEGI, descritos en
+[LICENSE-DATA.md](LICENSE-DATA.md).
