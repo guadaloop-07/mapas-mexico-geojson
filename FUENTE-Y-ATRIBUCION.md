@@ -17,8 +17,9 @@
    100 metros, preservando su topología.
 3. El archivo de entidades conserva `cve_ent`, `cvegeo`, `nombre_inegi` y
    `nombre_catalogo`; este último normaliza nombres para uso editorial.
-4. El contorno nacional se forma con la unión de las geometrías simplificadas, sin
-   límites internos.
+4. El contorno nacional se forma uniendo primero las geometrías de origen y
+   simplificando después esa silueta. Conserva la costa y las islas, pero rellena
+   sus anillos interiores para que no muestre trazos dentro del territorio.
 5. Cada entidad simplificada se distribuye también como un GeoJSON individual para
    facilitar su reutilización como contorno estatal.
 

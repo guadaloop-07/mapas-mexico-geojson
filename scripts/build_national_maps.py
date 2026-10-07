@@ -10,7 +10,7 @@ import unicodedata
 from pathlib import Path
 from typing import Any
 
-from shapely.geometry import mapping, shape
+from shapely.geometry import MultiPolygon, Polygon, mapping, shape
 from shapely.ops import unary_union
 
 ENTITY_NAMES = {
@@ -106,11 +106,17 @@ def build_entities(collection: dict[str, Any], tolerance: float) -> dict[str, An
     return {"type": "FeatureCollection", "features": features}
 
 
-def build_outline(entities: dict[str, Any]) -> dict[str, Any]:
-    """Une las entidades simplificadas en un contorno nacional sin divisiones."""
-    outline = unary_union([shape(feature["geometry"]) for feature in entities["features"]])
+def build_outline(collection: dict[str, Any], tolerance: float) -> dict[str, Any]:
+    """Disuelve entidades y elimina anillos interiores del contorno nacional."""
+    outline = unary_union([shape(feature["geometry"]) for feature in collection["features"]])
     if outline.is_empty or not outline.is_valid:
         raise ValueError("La unión nacional produjo una geometría inválida.")
+    outline = outline.simplify(tolerance, preserve_topology=True)
+    if outline.is_empty or not outline.is_valid:
+        raise ValueError("La simplificación nacional produjo una geometría inválida.")
+    outline = remove_interior_rings(outline)
+    if outline.is_empty or not outline.is_valid:
+        raise ValueError("El contorno nacional sin anillos interiores es inválido.")
     return {
         "type": "FeatureCollection",
         "features": [
@@ -121,6 +127,15 @@ def build_outline(entities: dict[str, Any]) -> dict[str, Any]:
             }
         ],
     }
+
+
+def remove_interior_rings(geometry: Any) -> Polygon | MultiPolygon:
+    """Conserva costas e islas, pero rellena huecos en una silueta de contorno."""
+    if geometry.geom_type == "Polygon":
+        return Polygon(geometry.exterior)
+    if geometry.geom_type == "MultiPolygon":
+        return MultiPolygon([Polygon(part.exterior) for part in geometry.geoms])
+    raise ValueError("El contorno nacional debe ser Polygon o MultiPolygon.")
 
 
 def entity_filename(feature: dict[str, Any]) -> str:
@@ -181,7 +196,7 @@ def main() -> None:
     print(f"SHA-256 de fuente: {source_hash}")
     collection = load_source(args.source)
     entities = build_entities(collection, args.tolerance)
-    outline = build_outline(entities)
+    outline = build_outline(collection, args.tolerance)
     entity_outlines = build_entity_outlines(entities)
     write_geojson(args.output_dir / "mexico-entidades.geojson", entities)
     write_geojson(args.output_dir / "mexico-contorno.geojson", outline)
